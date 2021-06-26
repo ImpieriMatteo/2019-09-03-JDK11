@@ -5,6 +5,7 @@
 package it.polito.tdp.food;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.ResourceBundle;
 import it.polito.tdp.food.model.Model;
 import javafx.event.ActionEvent;
@@ -40,7 +41,7 @@ public class FoodController {
     private Button btnCammino; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxPorzioni"
-    private ComboBox<?> boxPorzioni; // Value injected by FXMLLoader
+    private ComboBox<String> boxPorzioni; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtResult"
     private TextArea txtResult; // Value injected by FXMLLoader
@@ -48,21 +49,69 @@ public class FoodController {
     @FXML
     void doCammino(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Cerco cammino peso massimo...");
+    	txtResult.appendText("Cerco cammino peso massimo...\n\n");
+    	
+    	Integer N;
+    	try {
+    		N = Integer.parseInt(this.txtCalorie.getText());
+    	}
+    	catch(NumberFormatException e) {
+    		this.txtResult.appendText("Devi inserire un numero INTERO!!");
+    		return;
+    	}
+    	
+    	String porzioneScelta = this.boxPorzioni.getValue();
+    	
+    	this.model.cercaCammino(N, porzioneScelta);
+    	
+    	this.txtResult.appendText("Percorso trovato con peso "+this.model.getPesoBest()+": \n");
+    	for(String s : this.model.getCamminoBest()) {
+    		this.txtResult.appendText("- "+s+"\n");
+    	}
     }
 
     @FXML
     void doCorrelate(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Cerco porzioni correlate...");
+    	txtResult.appendText("Cerco porzioni correlate...\n\n");
     	
+    	String porzioneScelta = this.boxPorzioni.getValue();
+    	if(porzioneScelta == null) {
+    		this.txtResult.appendText("Devi scegliere prima una PORZIONE!!");
+    		return;
+    	}
+    	
+    	Map<String, Integer> result = this.model.getCorrelate(porzioneScelta);
+    	
+    	this.txtResult.appendText("Elenco delle porzioni direttamente connesse: \n");
+    	for(String s : result.keySet()) {
+    		
+    		this.txtResult.appendText("- '"+s+"' Peso: "+result.get(s)+"\n");
+    	}
+    	
+    	this.btnCammino.setDisable(false);
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Creazione grafo...");
+    	txtResult.appendText("Creazione grafo...\n\n");
     	
+    	Integer C;
+    	try {
+    		C = Integer.parseInt(this.txtCalorie.getText());
+    	}
+    	catch(NumberFormatException e) {
+    		this.txtResult.appendText("Devi inserire un numero INTERO!!");
+    		return;
+    	}
+    	
+    	String result = this.model.creaGrafo(C);
+    	
+    	this.txtResult.appendText(result);
+    	this.btnCorrelate.setDisable(false);
+    	
+    	this.boxPorzioni.getItems().addAll(this.model.getAllVertex());
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
